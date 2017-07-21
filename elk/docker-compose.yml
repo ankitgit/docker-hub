@@ -1,0 +1,30 @@
+version: '2'
+services:
+  elasticsearch:
+    hostname: elastic
+    domainname: elk-local
+    image: elasticsearch:2.4
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - ES_HEAP_SIZE=1G
+    #volumes:
+     # - $PWD/elasticsearch.yml:/usr/share/elasticsearch/config
+     # - data:/data
+  kibana:
+    hostname: kibana
+    domainname: elk-local
+    image: kibana:4.2
+    ports:
+      - "5601:5601"
+  logstash:
+    hostname: logstash
+    domainname: elk-local
+    command: logstash -e 'input { tcp { port => 5044 } } filter { grok { add_tag => [ "foo", "taggedy_tag"] add_field => { "foo_%{hello}" => "Hello world, from %{host}" "new_field" => "new_static_value" } } } output { elasticsearch { hosts => [ 'elasticsearch' ] index => "elk-data-%{+YYYY.MM.dd}" } }'
+    image: logstash:2.4
+    ports:
+      - "5044:5044"
+volumes:
+  data:
+    driver: local
